@@ -2,7 +2,9 @@
 
 # Intro
 
-This repository is made to deploy open source tools easily to have a modern serverless data stack. There is no Airflow and dbt is also in serverless mode being scheduled through Cloud Workflows.
+This repository is made to deploy open source tools easily to have a modern serverless data stack.
+
+There is no real need for Airflow, because dbt is meant to be deployed in serverless mode with this repository (Cloud Workflows + Cloud Scheduler). This is an opinionated choice, because I dislike the current use data teams make of Airflow. But later on I will still add support for it.
 
 It only supports GCP for now.
 
@@ -78,13 +80,31 @@ If you want to directly access your airbyte instance, we can tunnel the instance
 make airbyte-tunnel
 ```
 
-You can now create connectors between your sources and destinations.
+You can now create connectors between your sources and destinations on the url _localhost:8002_
 
 When you don't need to connect to the instance anymore just run:
 
 ```bash
 make airbyte-fuser
 ```
+
+### dbt
+
+You can initialize a dbt project with the command:
+
+```bash
+make dbt-init
+```
+
+It will be based on three env variables located in your .env file: _PROJECT_, _DBT\_PROJECT_ and _DBT\_DATASET_.
+
+Then you can locally run your models, views, etc... with the following command:
+
+```bash
+make dbt-run
+```
+
+TODO develop serverless dbt
 
 ### Lightdash
 

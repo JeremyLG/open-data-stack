@@ -1,6 +1,7 @@
 # Credentials and env
 .env
-credentials/
+credentials/*.json
+credentials/*.yml
 
 # Terraform directories and files
 .terraform/
@@ -11,3 +12,7 @@ tfplan*
 *.tfstate.*
 *.tfvars
 .iac-env
+
+# dbt setup
+logs/
+yolo/

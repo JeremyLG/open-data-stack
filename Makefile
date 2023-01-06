@@ -2,6 +2,8 @@ SHELL := /bin/bash
 
 include .env
 
+.EXPORT_ALL_VARIABLES:
+
 # ---------------------------------------------------------------------------------------- #
 # -- < Variables > --
 # ---------------------------------------------------------------------------------------- #
@@ -24,6 +26,8 @@ $(info PROJECT           = $(PROJECT))
 $(info ZONE              = $(ZONE))
 $(info REGION            = $(REGION))
 $(info DEPLOY_BUCKET     = $(DEPLOY_BUCKET))
+$(info DBT_PROJECT       = $(DBT_PROJECT))
+$(info DBT_DATASET       = $(DBT_DATASET))
 
 $(info $(shell printf "=%.s" $$(seq 100)))
 
@@ -41,6 +45,8 @@ create-bucket   Creates the deployment bucket necessary to store infrastructrue 
 clean           Cleans all the files created by the setup process
 airbyte-tunnel  Tunnels to the GCE Airbyte instance into our localhost:8002
 airbyte-fuser   Kills the tunnel which was previously created
+dbt-init  		Initializes a dbt project with credentials, profiles generation
+dbt-run   		Runs the dbt project
 iac-prepare     Prepares the terraform infrastructure by create the variable files
 iac-plan        Produces the terraform plan to visualize what will be changed in the infrastructure
 iac-deploy      Proceeds to the application of the terraform infrastructure
@@ -102,6 +108,15 @@ airbyte-tunnel:
 airbyte-fuser:
 	@fuser -k 8002/tcp
 
+dbt-init:
+	@cd $(IAC_DIR) && terraform output dbt_sa_key | base64 --decode --ignore-garbage > ../credentials/dbt-sa-creds.json
+	@envsubst < credentials/profiles.yml.tmpl > credentials/profiles.yml
+	@dbt init --profiles-dir credentials/ -s $(DBT_PROJECT)
+	@cd $(DBT_DIR) && dbt debug --profiles-dir ../credentials/
+
+dbt-run:
+	@cd $(DBT_DIR) && dbt run --profiles-dir ../credentials/
+
 lightdash-tunnel:
 	@gcloud beta compute ssh --zone "$(ZONE)" "$(PROJECT)-lightdash"  --project "$(PROJECT)" -- -L 8003:localhost:8080 -N -f
 
@@ -113,6 +128,7 @@ lightdash-fuser:
 # ---------------------------------------------------------------------------------------- #
 # -- terraform variables declaration
 IAC_DIR = iac/
+DBT_DIR = $(DBT_PROJECT)/
 TF_DIR = $(IAC_DIR).terraform/
 TF_INIT  = $(TF_DIR)terraform.tfstate
 TF_VARS  = $(IAC_DIR)terraform.tfvars
