@@ -2,11 +2,13 @@
 
 # Intro
 
-This repository is made to deploy open source tools easily to have a modern serverless data stack.
+This repository is made to deploy open source tools easily to have a modern data stack.
 
 There is no real need for Airflow, because dbt is meant to be deployed in serverless mode with this repository (Cloud Workflows + Cloud Scheduler). This is an opinionated choice, because I dislike the current use data teams make of Airflow. But later on I will still add support for it.
 
 It only supports GCP for now.
+
+As Airbyte and Lightdash needs multiple containers to run, they can't be deployed in serverless. Thus they are deployed as Compute Engine VM.
 
 Planning to later add support for:
 
@@ -108,4 +110,16 @@ TODO develop serverless dbt
 
 ### Lightdash
 
-TODO
+If you want to directly access your lightdash instance, we can tunnel the instance IP to our localhost with this command:
+
+```bash
+make lightdash-tunnel
+```
+
+You can now create connectors between your sources and destinations on the url _localhost:8003_
+
+When you don't need to connect to the instance anymore just run:
+
+```bash
+make lightdash-fuser
+```

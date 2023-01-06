@@ -15,4 +15,6 @@ tfplan*
 
 # dbt setup
 logs/
-yolo/
+
+# local lightdash
+lightdash
