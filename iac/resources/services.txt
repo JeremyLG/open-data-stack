@@ -1,0 +1,8 @@
+bigquery
+cloudresourcemanager
+compute
+logging
+run
+secretmanager
+serviceusage
+workflows
