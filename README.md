@@ -116,7 +116,9 @@ If you want to directly access your lightdash instance, we can tunnel the instan
 make lightdash-tunnel
 ```
 
-You can now create connectors between your sources and destinations on the url _localhost:8003_
+You can now connect on the url _localhost:8003_, sadly Lightdash isn't really terraform friendly so we need to do some UI few steps. For now I don't know how to automate this, I will need to deep dive in the CLI (or even API if there is any)
+
+See Lightdash initial project setup tutorial in our docs [here](docs/lightdash.md)
 
 When you don't need to connect to the instance anymore just run:
 

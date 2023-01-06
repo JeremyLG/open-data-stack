@@ -117,6 +117,9 @@ dbt-init:
 dbt-run:
 	@cd $(DBT_DIR) && dbt run --profiles-dir ../credentials/
 
+lightdash-credentials:
+	@cd $(IAC_DIR) && terraform output dbt_sa_key | base64 --decode --ignore-garbage > ../credentials/lightdash-sa-creds.json
+
 lightdash-tunnel:
 	@gcloud beta compute ssh --zone "$(ZONE)" "$(PROJECT)-lightdash"  --project "$(PROJECT)" -- -L 8003:localhost:8080 -N -f
 
