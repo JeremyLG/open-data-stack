@@ -5,7 +5,7 @@ locals {
     "bigquery.admin"
   ])
 
-  airbyte_machine_type = "e2-small"
+  airbyte_machine_type   = "e2-small"
   lightdash_machine_type = "e2-small"
 
   source_datasets = {

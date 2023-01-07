@@ -69,6 +69,11 @@ help:
 
 all: create-project create-bucket iac-clean iac-deploy
 
+gcloud:
+	gcloud projects add-iam-policy-binding $(PROJECT) \
+		--member=user:$(ACCOUNT) \
+		--role=roles/iam.serviceAccountTokenCreator
+
 # -- This target triggers the creation of the necessary project
 .PHONY: create-project
 create-project:
@@ -78,6 +83,11 @@ create-project:
 	@echo "[$@] :: linking billing account to project..."
 	@gcloud beta billing projects link $(PROJECT) --billing-account=$(BILLING_ID)
 	@echo "[$@] :: project creation is over."
+
+create-initial-apis:
+	@echo "[$@] :: enabling apis..."
+	@gcloud services enable artifactregistry.googleapis.com --project $(PROJECT)
+	@echo "[$@] :: apis enabled"
 
 # -- This target triggers the creation of the necessary buckets
 .PHONY: create-bucket
@@ -112,10 +122,44 @@ dbt-init:
 	@cd $(IAC_DIR) && terraform output dbt_sa_key | base64 --decode --ignore-garbage > ../credentials/dbt-sa-creds.json
 	@envsubst < credentials/profiles.yml.tmpl > credentials/profiles.yml
 	@dbt init --profiles-dir credentials/ -s $(DBT_PROJECT)
-	@cd $(DBT_DIR) && dbt debug --profiles-dir ../credentials/
+	@dbt debug --profiles-dir credentials/ --project-dir $(DBT_PROJECT)/
+
+dbt-debug:
+	@dbt debug --profiles-dir credentials/ --project-dir $(DBT_PROJECT)/
 
 dbt-run:
-	@cd $(DBT_DIR) && dbt run --profiles-dir ../credentials/
+	@dbt run --profiles-dir credentials/ --project-dir $(DBT_PROJECT)/
+
+dbt-serverless: dbt-serverless-clean dbt-serverless-build dbt-serverless-run
+
+dbt-serverless-build:
+	@docker build . \
+		-t dbt \
+		-f dbt.Dockerfile \
+		--build-arg DBT_PROJECT=$(DBT_PROJECT)
+
+dbt-serverless-cloudbuild: dbt-serverless-build
+	@docker tag dbt:latest $(REGION)-docker.pkg.dev/$(PROJECT)/$(PROJECT)/dbt
+	@docker push $(REGION)-docker.pkg.dev/$(PROJECT)/$(PROJECT)/dbt:latest
+
+dbt-serverless-cloudrun: dbt-serverless-clean
+	@gcloud beta run services proxy dbt --project $(PROJECT) --region $(REGION)
+
+dbt-serverless-run:
+	@docker run -d \
+		-p 8080:8080 \
+		-v "$$(pwd)/credentials:/dbt/credentials" \
+		--env GOOGLE_APPLICATION_CREDENTIALS=/dbt/credentials/dbt-sa-creds.json \
+		--env PROJECT=$(PROJECT) \
+		--env DBT_DATASET=$(DBT_DATASET) \
+		--name dbt \
+		dbt
+
+dbt-serverless-clean:
+	@docker stop dbt || true
+	@docker container rm dbt ||true
+	@docker image prune -f
+	@docker volume prune -f
 
 lightdash-credentials:
 	@cd $(IAC_DIR) && terraform output dbt_sa_key | base64 --decode --ignore-garbage > ../credentials/lightdash-sa-creds.json
