@@ -273,6 +273,11 @@ iac-sec:
 	@echo "[$@] :: security checked on $(PROJECT)"
 
 # -- this target will only trigger the iac of the current parent
+.PHONY: iac-version
+iac-version:
+	@cd $(IAC_DIR) && terraform -version
+
+# -- this target will only trigger the iac of the current parent
 .PHONY: iac-deploy
 iac-deploy: iac-clean $(TF_PLAN)
 	@echo "[$@] :: applying the infrastructure for $(PROJECT)"
