@@ -28,6 +28,7 @@ $(info REGION            = $(REGION))
 $(info DEPLOY_BUCKET     = $(DEPLOY_BUCKET))
 $(info DBT_PROJECT       = $(DBT_PROJECT))
 $(info DBT_DATASET       = $(DBT_DATASET))
+$(info GITHUB_REPO       = $(GITHUB_REPO))
 
 $(info $(shell printf "=%.s" $$(seq 100)))
 
@@ -158,12 +159,12 @@ dbt-serverless-run:
 		--env GOOGLE_APPLICATION_CREDENTIALS=/dbt/credentials/dbt-sa-creds.json \
 		--env PROJECT=$(PROJECT) \
 		--env DBT_DATASET=$(DBT_DATASET) \
-		--name dbt \
-		dbt
+		--name dbt-serverless \
+		dbt-serverless
 
 dbt-serverless-clean:
-	@docker stop dbt || true
-	@docker container rm dbt ||true
+	@docker stop dbt-serverless || true
+	@docker container rm dbt-serverless ||true
 	@docker image prune -f
 	@docker volume prune -f
 
@@ -227,6 +228,7 @@ org_id              = "$(ORG_ID)"
 project             = "$(PROJECT)"
 zone                = "$(ZONE)"
 region              = "$(REGION)"
+github_repo         = "$(GITHUB_REPO)"
 endef
 export HERE_TF_VARS
 

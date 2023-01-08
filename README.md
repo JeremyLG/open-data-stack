@@ -1,5 +1,20 @@
 # Open Data Stack
 
+- [Open Data Stack](#open-data-stack)
+- [Intro](#intro)
+  - [Data Tools](#data-tools)
+  - [Begin your journey](#begin-your-journey)
+    - [Setup GCP Account and Billing](#setup-gcp-account-and-billing)
+    - [Setup Google Cloud CLI](#setup-google-cloud-cli)
+    - [Install Terraform](#install-terraform)
+    - [Fork this repository](#fork-this-repository)
+    - [Deploy the open data stack](#deploy-the-open-data-stack)
+  - [The different tools deployed](#the-different-tools-deployed)
+    - [Airbyte](#airbyte)
+    - [dbt](#dbt)
+    - [Lightdash](#lightdash)
+  - [Known issues and technical difficulties](#known-issues-and-technical-difficulties)
+
 # Intro
 
 This repository is made to deploy open source tools easily to have a modern data stack.
@@ -98,7 +113,7 @@ You can initialize a dbt project with the command:
 make dbt-init
 ```
 
-It will be based on three env variables located in your .env file: _PROJECT_, _DBT\_PROJECT_ and _DBT\_DATASET_.
+It will be based on three env variables located in your .env file: _PROJECT_, _DBT_PROJECT_ and _DBT_DATASET_.
 
 Then you can locally run your models, views, etc... with the following command:
 
@@ -125,7 +140,6 @@ When you don't need to connect to the instance anymore just run:
 ```bash
 make lightdash-fuser
 ```
-
 
 ## Known issues and technical difficulties
 

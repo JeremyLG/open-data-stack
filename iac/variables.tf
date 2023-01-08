@@ -27,3 +27,8 @@ variable "zone" {
   type = string
   description = "The zone where to deploy your infrastructure"
 }
+
+variable "github_repo" {
+  type = string
+  description = "The github repo of your project"
+}
