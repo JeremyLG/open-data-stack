@@ -127,6 +127,10 @@ dbt-init:
 dbt-debug:
 	@dbt debug --profiles-dir credentials/ --project-dir $(DBT_PROJECT)/
 
+dbt-docs:
+	@dbt docs generate --profiles-dir credentials/ --project-dir $(DBT_PROJECT)/
+	@python dbt_serverless/docs_helper.py
+
 dbt-run:
 	@dbt run --profiles-dir credentials/ --project-dir $(DBT_PROJECT)/
 
@@ -134,16 +138,18 @@ dbt-serverless: dbt-serverless-clean dbt-serverless-build dbt-serverless-run
 
 dbt-serverless-build:
 	@docker build . \
-		-t dbt \
+		-t dbt-serverless \
 		-f dbt.Dockerfile \
 		--build-arg DBT_PROJECT=$(DBT_PROJECT)
 
+DBT_SERVERLESS_VERSION ?= latest
+
 dbt-serverless-cloudbuild: dbt-serverless-build
-	@docker tag dbt:latest $(REGION)-docker.pkg.dev/$(PROJECT)/$(PROJECT)/dbt
-	@docker push $(REGION)-docker.pkg.dev/$(PROJECT)/$(PROJECT)/dbt:latest
+	@docker tag dbt-serverless:latest $(REGION)-docker.pkg.dev/$(PROJECT)/$(PROJECT)/dbt-serverless:$(DBT_SERVERLESS_VERSION)
+	@docker push $(REGION)-docker.pkg.dev/$(PROJECT)/$(PROJECT)/dbt-serverless:$(DBT_SERVERLESS_VERSION)
 
 dbt-serverless-cloudrun: dbt-serverless-clean
-	@gcloud beta run services proxy dbt --project $(PROJECT) --region $(REGION)
+	@gcloud beta run services proxy dbt-serverless --project $(PROJECT) --region $(REGION)
 
 dbt-serverless-run:
 	@docker run -d \

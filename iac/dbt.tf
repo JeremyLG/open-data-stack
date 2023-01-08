@@ -1,13 +1,13 @@
 
-resource "google_cloud_run_service" "dbt" {
+resource "google_cloud_run_service" "dbt-serverless" {
   provider = google-beta
   location = var.region
-  name     = "dbt"
+  name     = "dbt-serverless"
 
   template {
     spec {
       containers {
-        image ="${var.region}-docker.pkg.dev/${var.project}/${var.project}/dbt:latest"
+        image ="${var.region}-docker.pkg.dev/${var.project}/${var.project}/dbt-serverless:1.2"
         env {
           name  = "PROJECT"
           value = var.project
@@ -42,6 +42,23 @@ resource "google_cloud_run_service" "dbt" {
 }
 
 
-output "dbt_cloud_run" {
-  value = google_cloud_run_service.dbt.status[0].url
+output "dbt-serverless_cloud_run" {
+  value = google_cloud_run_service.dbt-serverless.status[0].url
+}
+
+resource "google_storage_bucket" "dbt_static_website" {
+  name          = "dbt-static-docs-bucket"
+  location      = "EU"
+  storage_class = "COLDLINE"
+  website {
+    main_page_suffix = "index_merged.html"
+    not_found_page   = "index_merged.html"
+  }
+}
+
+# Make bucket public by granting allUsers READER access
+resource "google_storage_bucket_access_control" "public_rule" {
+  bucket = google_storage_bucket.dbt_static_website.id
+  role   = "READER"
+  entity = "allUsers"
 }

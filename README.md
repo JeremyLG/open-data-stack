@@ -125,3 +125,8 @@ When you don't need to connect to the instance anymore just run:
 ```bash
 make lightdash-fuser
 ```
+
+
+## Known issues and technical difficulties
+
+[New latest image version](https://stackoverflow.com/questions/74029047/cloud-run-deployment-pattern-when-new-images-are-pushed-if-services-are-created)

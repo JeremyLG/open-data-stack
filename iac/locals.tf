@@ -4,6 +4,10 @@ locals {
   elt_roles = toset([
     "bigquery.admin"
   ])
+  dbt_roles = toset([
+    "bigquery.admin",
+    "storage.admin"
+  ])
 
   airbyte_machine_type   = "e2-small"
   lightdash_machine_type = "e2-small"
