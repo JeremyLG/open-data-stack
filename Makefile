@@ -216,7 +216,7 @@ $(TF_INIT):
 		echo "$(PROJECT)" > $(IAC_DIR).iac-env; \
 		cd $(IAC_DIR) && terraform init \
 			-backend-config=bucket=$(DEPLOY_BUCKET) \
-			-backend-config=prefix=terraform-state/init \
+			-backend-config=prefix=terraform-state/$(RUN_FROM) \
 			-input=false; \
 	else \
 		echo "[iac-init] :: terraform already initialized"; \
