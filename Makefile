@@ -246,7 +246,7 @@ $(TF_VARS): $(TF_INIT)
 iac-plan-clean:
 	@rm -f $(TF_PLAN)
 
-iac-plan: $(TF_PLAN) # provided for convenience
+iac-plan: iac-plan-clean $(TF_PLAN) # provided for convenience
 $(TF_PLAN): $(TF_VARS) $(TF_FILES)
 	@echo "[iac-plan] :: planning the iac in $(PROJECT)";
 	@set -euo pipefail; \
@@ -261,7 +261,14 @@ iac-validate:
 	@echo "[$@] :: validating the infrastructure for $(PROJECT)"
 	@set -euo pipefail; \
 	cd $(IAC_DIR) && terraform validate;
-	@echo "[$@] :: infrastructure applied on $(PROJECT)"
+	@echo "[$@] :: infrastructure validated on $(PROJECT)"
+
+# -- this target will only trigger the iac of the current parent
+.PHONY: iac-sec
+iac-sec:
+	@echo "[$@] :: checking the infrastructure security for $(PROJECT)"
+	@tfsec .
+	@echo "[$@] :: security checked on $(PROJECT)"
 
 # -- this target will only trigger the iac of the current parent
 .PHONY: iac-deploy

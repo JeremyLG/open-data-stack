@@ -1,0 +1,34 @@
+name: Terraform Plan
+
+on: [push]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    environment: dev
+
+    # Add "id-token" with the intended permissions.
+    permissions:
+      contents: "read"
+      id-token: "write"
+
+    steps:
+      - uses: actions/checkout@v3
+      - uses: hashicorp/setup-terraform@v2
+
+      - name: "Create env file"
+        run: |
+          echo "${{ secrets.ENV_FILE }}" > .env
+
+      - name: Terraform Init
+        id: init
+        run: make iac-init
+
+      - name: Terraform Validate
+        id: validate
+        run: make iac-validate
+
+      - name: Terraform Plan
+        id: plan
+        run: make iac-plan
