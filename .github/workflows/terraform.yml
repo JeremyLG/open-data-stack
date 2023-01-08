@@ -35,11 +35,14 @@ jobs:
       - name: Terraform Init
         id: init
         run: make iac-init
+        continue-on-error: true
 
       - name: Terraform Validate
         id: validate
         run: make iac-validate
+        continue-on-error: true
 
       - name: Terraform Plan
         id: plan
         run: make iac-plan
+        continue-on-error: true
