@@ -1,6 +1,9 @@
+appengine
+artifactregistry
 bigquery
 cloudresourcemanager
 compute
+iam
 logging
 run
 secretmanager

@@ -42,3 +42,11 @@ resource "google_service_account_key" "lightdash_sa_key" {
   service_account_id = google_service_account.lightdash_sa.name
   public_key_type    = "TYPE_X509_PEM_FILE"
 }
+
+# Lightdash service account
+resource "google_service_account" "github-actions_sa" {
+  account_id   = "github-actions"
+  project      = var.project
+  display_name = "CI/CD Service Account"
+  description  = "CI/CD service account"
+}

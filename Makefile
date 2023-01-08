@@ -17,6 +17,7 @@ DEPLOY_BUCKET   := $(PROJECT)-gcs-deploy
 # -- < Feedback > --
 # ---------------------------------------------------------------------------------------- #
 # -- display environment variables
+ifeq ($(RUN_FROM), local)
 $(info $(shell printf "=%.s" $$(seq 100)))
 
 $(info BILLING_ID        = $(BILLING_ID))
@@ -31,6 +32,7 @@ $(info DBT_DATASET       = $(DBT_DATASET))
 $(info GITHUB_REPO       = $(GITHUB_REPO))
 
 $(info $(shell printf "=%.s" $$(seq 100)))
+endif
 
 # ---------------------------------------------------------------------------------------- #
 # This target will be called whenever make is called without any target. So this is the

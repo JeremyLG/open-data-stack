@@ -9,6 +9,8 @@ locals {
     "storage.admin"
   ])
 
+  cicd_roles = toset(split("\n", trimspace(file("resources/cicd.txt"))))
+
   airbyte_machine_type   = "e2-small"
   lightdash_machine_type = "e2-small"
 

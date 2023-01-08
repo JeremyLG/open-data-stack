@@ -21,6 +21,13 @@ jobs:
         run: |
           echo "${{ secrets.ENV_FILE }}" > .env
 
+      - id: "auth"
+        name: "Authenticate to Google Cloud"
+        uses: "google-github-actions/auth@v1"
+        with:
+          workload_identity_provider: projects/${{ secrets.PROJECT }}/locations/global/workloadIdentityPools/github-pool/providers/github-provider
+          service_account: github-actions@${{ secrets.PROJECT }}.iam.gserviceaccount.com
+
       - name: Terraform Init
         id: init
         run: make iac-init
