@@ -2,12 +2,12 @@
 # -- < Building dbt-serverless > --
 # ---------------------------------------------------------------------------------------- #
 
-dbt-init:
+dbt-init: ## Initialize a dbt project with credentials, profiles generation
 	@envsubst < credentials/profiles.yml.tmpl > credentials/profiles.yml
 	@dbt init --profiles-dir $(DBT_PROFILES_DIR)/ -s $(DBT_PROJECT)
 	@dbt debug --profiles-dir $(DBT_PROFILES_DIR)/ --project-dir $(DBT_PROJECT)/
 
-dbt-build:
+dbt-build: ## Build the dbt serverless docker image
 	@echo "[$@] :: building the Docker image"
 	@set -euo pipefail; \
 	docker build . \
@@ -18,7 +18,7 @@ dbt-build:
 		--build-arg DBT_PROFILES_DIR=$(DBT_PROFILES_DIR)
 	@echo "[$@] :: docker build is over."
 
-dbt-run: dbt-init dbt-build
+dbt-run: dbt-init dbt-build ## Run the dbt serverless project through docker in local for testing
 	@docker run \
 		--rm \
 		--interactive \
@@ -33,7 +33,7 @@ dbt-run: dbt-init dbt-build
 	@docker rmi -f $$(docker images -f "dangling=true" -q)
 	@docker volume prune -f
 
-dbt-deploy: dbt-init dbt-build
+dbt-deploy: dbt-init dbt-build ## Deploy the dbt serverless docker image to artifactregistry
 	@echo "[$@] :: Pushing docker image"
 	@docker push $(REGION)-docker.pkg.dev/$(PROJECT)/$(REPOSITORY_ID)/dbt-serverless:latest
 	@echo "[$@] :: docker push is over."

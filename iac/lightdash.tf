@@ -25,6 +25,11 @@ resource "google_service_account_key" "lightdash_sa_key" {
   public_key_type    = "TYPE_X509_PEM_FILE"
 }
 
+output "lightdash_sa_key" {
+  value     = google_service_account_key.lightdash_sa_key.private_key
+  sensitive = true
+}
+
 resource "google_compute_instance" "lightdash_instance" {
   name                    = "lightdash"
   machine_type            = local.lightdash_machine_type
