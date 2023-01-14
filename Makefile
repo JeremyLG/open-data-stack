@@ -16,7 +16,7 @@ DEPLOY_BUCKET   := $(PROJECT)-gcs-deploy
 # ---------------------------------------------------------------------------------------- #
 # -- < Feedback > --
 # ---------------------------------------------------------------------------------------- #
-# -- display environment variables
+# -- display environment variables only on local environment
 ifeq ($(RUN_FROM), local)
 $(info $(shell printf "=%.s" $$(seq 100)))
 
@@ -42,14 +42,20 @@ define HERE_HELP
 The available targets are:
 --------------------------
 help            Displays the current message
-all             Initializes the application (project creation, bucket creation and iac deployment)
+all             Initializes the application (project creation, bucket creation, docker upload and iac deployment)
 create-project  Creates the main gcp project
 create-bucket   Creates the deployment bucket necessary to store infrastructrue states
+create-ar       Creates the artifactregistry repository necessary to store initial docker images
 clean           Cleans all the files created by the setup process
+dbt-init        Initializes a dbt project with credentials, profiles generation
+dbt-build   	Builds the dbt serverless docker image
+dbt-run         Runs the dbt serverless project through docker in local for testing
+dbt-deploy   	Deploys the dbt serverless docker image to artifactregistry
 airbyte-tunnel  Tunnels to the GCE Airbyte instance into our localhost:8002
-airbyte-fuser   Kills the tunnel which was previously created
-dbt-init  		Initializes a dbt project with credentials, profiles generation
-dbt-run   		Runs the dbt project
+airbyte-fuser   Kills the tunnel which was previously created for airbyte
+ld-credentials  Creates the Lightdash credentials to upload on our GCP VM
+ld-tunnel       Tunnels to the GCE Lightdash instance into our localhost:8003
+ld-fuser        Kills the tunnel which was previously created for lightdash
 iac-prepare     Prepares the terraform infrastructure by create the variable files
 iac-plan        Produces the terraform plan to visualize what will be changed in the infrastructure
 iac-deploy      Proceeds to the application of the terraform infrastructure
@@ -70,7 +76,7 @@ help:
 # This target will perform the complete setup of the current repository.
 # ---------------------------------------------------------------------------------------- #
 
-all: create-project create-bucket iac-clean iac-deploy
+all: create-project create-bucket create-ar dbt-deploy iac-clean iac-deploy
 
 gcloud:
 	gcloud projects add-iam-policy-binding $(PROJECT) \
@@ -87,9 +93,15 @@ create-project:
 	@gcloud beta billing projects link $(PROJECT) --billing-account=$(BILLING_ID)
 	@echo "[$@] :: project creation is over."
 
-create-initial-apis:
+create-ar:
 	@echo "[$@] :: enabling apis..."
 	@gcloud services enable artifactregistry.googleapis.com --project $(PROJECT)
+	@echo "[$@] :: creating repository..."
+	@gcloud artifacts repositories create $(REPOSITORY_ID) \
+		--project $(PROJECT) \
+		--location $(REGION) \
+		--repository-format docker \
+		--description "Docker repository"
 	@echo "[$@] :: apis enabled"
 
 # -- This target triggers the creation of the necessary buckets
@@ -114,6 +126,7 @@ clean: iac-clean
 # ---------------------------------------------------------------------------------------- #
 # Open data stack needed commands.
 # ---------------------------------------------------------------------------------------- #
+include includes/dbt.mk
 
 airbyte-tunnel:
 	@gcloud beta compute ssh --zone "$(ZONE)" "$(PROJECT)-airbyte"  --project "$(PROJECT)" -- -L 8002:localhost:8000 -N -f
@@ -121,62 +134,13 @@ airbyte-tunnel:
 airbyte-fuser:
 	@fuser -k 8002/tcp
 
-dbt-init:
-	@cd $(IAC_DIR) && terraform output dbt_sa_key | base64 --decode --ignore-garbage > ../credentials/dbt-sa-creds.json
-	@envsubst < credentials/profiles.yml.tmpl > credentials/profiles.yml
-	@dbt init --profiles-dir credentials/ -s $(DBT_PROJECT)
-	@dbt debug --profiles-dir credentials/ --project-dir $(DBT_PROJECT)/
-
-dbt-debug:
-	@dbt debug --profiles-dir credentials/ --project-dir $(DBT_PROJECT)/
-
-dbt-docs:
-	@dbt docs generate --profiles-dir credentials/ --project-dir $(DBT_PROJECT)/
-	@python dbt_serverless/docs_helper.py
-
-dbt-run:
-	@dbt run --profiles-dir credentials/ --project-dir $(DBT_PROJECT)/
-
-dbt-serverless: dbt-serverless-clean dbt-serverless-build dbt-serverless-run
-
-dbt-serverless-build:
-	@docker build . \
-		-t dbt-serverless \
-		-f dbt.Dockerfile \
-		--build-arg DBT_PROJECT=$(DBT_PROJECT)
-
-DBT_SERVERLESS_VERSION ?= latest
-
-dbt-serverless-cloudbuild: dbt-serverless-build
-	@docker tag dbt-serverless:latest $(REGION)-docker.pkg.dev/$(PROJECT)/$(PROJECT)/dbt-serverless:$(DBT_SERVERLESS_VERSION)
-	@docker push $(REGION)-docker.pkg.dev/$(PROJECT)/$(PROJECT)/dbt-serverless:$(DBT_SERVERLESS_VERSION)
-
-dbt-serverless-cloudrun: dbt-serverless-clean
-	@gcloud beta run services proxy dbt-serverless --project $(PROJECT) --region $(REGION)
-
-dbt-serverless-run:
-	@docker run -d \
-		-p 8080:8080 \
-		-v "$$(pwd)/credentials:/dbt/credentials" \
-		--env GOOGLE_APPLICATION_CREDENTIALS=/dbt/credentials/dbt-sa-creds.json \
-		--env PROJECT=$(PROJECT) \
-		--env DBT_DATASET=$(DBT_DATASET) \
-		--name dbt-serverless \
-		dbt-serverless
-
-dbt-serverless-clean:
-	@docker stop dbt-serverless || true
-	@docker container rm dbt-serverless ||true
-	@docker image prune -f
-	@docker volume prune -f
-
-lightdash-credentials:
+ld-credentials:
 	@cd $(IAC_DIR) && terraform output dbt_sa_key | base64 --decode --ignore-garbage > ../credentials/lightdash-sa-creds.json
 
-lightdash-tunnel:
+ld-tunnel:
 	@gcloud beta compute ssh --zone "$(ZONE)" "$(PROJECT)-lightdash"  --project "$(PROJECT)" -- -L 8003:localhost:8080 -N -f
 
-lightdash-fuser:
+ld-fuser:
 	@fuser -k 8003/tcp
 
 # ---------------------------------------------------------------------------------------- #
@@ -216,7 +180,7 @@ $(TF_INIT):
 		echo "$(PROJECT)" > $(IAC_DIR).iac-env; \
 		cd $(IAC_DIR) && terraform init \
 			-backend-config=bucket=$(DEPLOY_BUCKET) \
-			-backend-config=prefix=terraform-state/$(RUN_FROM) \
+			-backend-config=prefix=terraform-state/init \
 			-input=false; \
 	else \
 		echo "[iac-init] :: terraform already initialized"; \
@@ -231,6 +195,9 @@ project             = "$(PROJECT)"
 zone                = "$(ZONE)"
 region              = "$(REGION)"
 github_repo         = "$(GITHUB_REPO)"
+github_owner        = "$(GITHUB_OWNER)"
+github_token        = "$(GITHUB_TOKEN)"
+repository_id       = "$(REPOSITORY_ID)"
 endef
 export HERE_TF_VARS
 

@@ -73,6 +73,8 @@ gh repo fork REPOSITORY --org ORGANIZATION --clone=true
 
 Then you will need to install Github CLI with the [following instructions](https://github.com/cli/cli#installation)
 
+TODO document github PAT
+
 ### Deploy the open data stack
 
 To create the resources on Google Cloud, you will first have to fill your .env file. We provided a template, you can just copy it and rename it to .env.

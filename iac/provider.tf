@@ -9,3 +9,8 @@ provider "google" {
   region  = var.region
   zone    = var.zone
 }
+
+provider "github" {
+  token = var.github_token
+  owner = var.github_owner
+}

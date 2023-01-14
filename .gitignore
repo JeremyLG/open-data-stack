@@ -1,5 +1,7 @@
 # Credentials and env
 .env
+.env.cicd
+
 credentials/*.json
 credentials/*.yml
 
