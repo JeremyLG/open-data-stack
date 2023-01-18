@@ -56,6 +56,10 @@ resource "google_cloud_run_service" "dbt-serverless" {
     percent         = 100
     latest_revision = true
   }
+
+  depends_on = [
+    google_project_service.services
+  ]
 }
 
 
@@ -64,7 +68,7 @@ output "dbt-serverless_cloud_run" {
 }
 
 resource "google_storage_bucket" "dbt_static_website" {
-  name          = "dbt-static-docs-bucket"
+  name          = "${var.project}-dbt-docs"
   location      = "EU"
   storage_class = "COLDLINE"
   website {

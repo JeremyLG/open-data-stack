@@ -4,7 +4,9 @@ bigquery
 cloudresourcemanager
 compute
 iam
+iap
 logging
+networkmanagement
 run
 secretmanager
 serviceusage
