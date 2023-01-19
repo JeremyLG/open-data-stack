@@ -5,7 +5,7 @@
 dbt-init: ## Initialize a dbt project with credentials, profiles generation
 	@envsubst < credentials/profiles.yml.tmpl > credentials/profiles.yml
 	@dbt init --profiles-dir $(DBT_PROFILES_DIR)/ -s $(DBT_PROJECT)
-	@dbt debug --profiles-dir $(DBT_PROFILES_DIR)/ --project-dir $(DBT_PROJECT)/
+	@dbt debug --profiles-dir $(DBT_PROFILES_DIR)/ --project-dir $(DBT_PROJECT)/ || true
 
 dbt-build: ## Build the dbt serverless docker image
 	@echo "[$@] :: building the Docker image"

@@ -1,3 +1,9 @@
+variable "google_account" {
+  type        = string
+  sensitive   = true
+  description = "Your google account"
+}
+
 variable "billing_id" {
   type        = string
   description = "Your billing ID"
@@ -31,6 +37,11 @@ variable "zone" {
 variable "repository_id" {
   type        = string
   description = "The artifact registry repo of your project"
+}
+
+variable "dns" {
+  type        = string
+  description = "Personal DNS to deploy HTTPS modules like Airbyte, Lightdash"
 }
 
 variable "github_owner" {

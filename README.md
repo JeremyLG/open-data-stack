@@ -49,6 +49,12 @@ Planning to later add support for:
 
 To use the Google Cloud Platform with this project, you will need to create a Google Cloud account and enable billing. In the billing page, you will find a billing ID in the format ######-######-######. Make sure to note this value, as it will be required in the next step.
 
+You can even set an organization if you need and if you have a professional DNS. You should follow instructions at the [following link](admin.google.com)
+
+If you want to avoid the next few steps, you can use the docker image already created for you.
+
+It has all the tools needed: gcloud cli, terraform, etc...
+
 ### Setup Google Cloud CLI
 
 To set up the Google Cloud SDK on your computer, follow the instructions provided for your specific operating system. Once you have installed the gcloud command-line interface (CLI), open a terminal window and run the following command. This will allow Terraform to use your default credentials for authentication.
@@ -77,9 +83,24 @@ TODO document github PAT
 
 ### Deploy the open data stack
 
+#### Fill up your `.env` file
+
 To create the resources on Google Cloud, you will first have to fill your .env file. We provided a template, you can just copy it and rename it to .env.
 
 Then you only need to fill what you want. BILLING_ID (which we already have thanks to step 1), PROJECT, REGION and ZONE should at least be set. You can keep default REGION and ZONE that we set in the template file. Make sure that your PROJECT variable is 6 to 30 characters in length and only contains lowercase letters, numbers, and hyphens.
+
+#### (Optional) folder creation for organization
+
+If you setup an organization (optional), you can also create a folder (optional). In order to do this optional step, fill the FOLDER_NAME value in your `.env` file and afterwards just run:
+
+```bash
+make create-folder
+```
+
+Check the FOLDER_ID value on the CLI, here is an example, the value is the one under the green rectange. Just fill the `.env` file with this value.
+![folder](docs/fig/gcloud_1_folder.png)
+
+#### Deploy the whole thing
 
 Finally run the following command in a terminal window:
 
@@ -90,6 +111,12 @@ make all
 This will create a google project, a gcs bucket for Terraform state infrastructure storage and deploy the IaC afterwards. That's it.
 
 ## The different tools deployed
+
+### (Optional) Load balancers for personal DNS
+
+You can enable IAP and HTTPS endpoints for Airbyte and Lightdash instances. This is set in the load_balancer files and through your DNS variable that you can optionally set in your `.env` file.
+
+You will get your two instances only available on your DNS with IAP authenticated users : airbyte.yourdns.com / lightdash.yourdns.com.
 
 ### Airbyte
 
