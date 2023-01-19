@@ -112,6 +112,12 @@ This will create a google project, a gcs bucket for Terraform state infrastructu
 
 ## The different tools deployed
 
+### (Optional) Load balancers for personal DNS
+
+You can enable IAP and HTTPS endpoints for Airbyte and Lightdash instances. This is set in the load_balancer files and through your DNS variable that you can optionally set in your `.env` file.
+
+You will get your two instances only available on your DNS with IAP authenticated users : airbyte.yourdns.com / lightdash.yourdns.com.
+
 ### Airbyte
 
 If you want to directly access your airbyte instance, we can tunnel the instance IP to our localhost with this command:

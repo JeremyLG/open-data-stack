@@ -42,12 +42,14 @@ $(TF_INIT):
 
 # -- internal definition for easing changes
 define HERE_TF_VARS
+google_account      = "$(GOOGLE_ACCOUNT)"
 billing_id          = "$(BILLING_ID)"
 folder_id           = "$(FOLDER_ID)"
 org_id              = "$(ORG_ID)"
 project             = "$(PROJECT)"
 zone                = "$(ZONE)"
 region              = "$(REGION)"
+dns					= "$(DNS)"
 github_repo         = "$(GITHUB_REPO)"
 github_owner        = "$(GITHUB_OWNER)"
 github_token        = "$(GITHUB_TOKEN)"

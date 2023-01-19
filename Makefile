@@ -11,6 +11,8 @@ include includes/lightdash.mk
 
 .DEFAULT_GOAL := help
 
+ROOT_DIR:=$(shell dirname $(realpath $(firstword $(MAKEFILE_LIST))))
+
 # ---------------------------------------------------------------------------------------- #
 # -- < Variables > --
 # ---------------------------------------------------------------------------------------- #
@@ -46,4 +48,14 @@ help: ## Displays the current message
 # This target will perform the complete setup of the current repository.
 # ---------------------------------------------------------------------------------------- #
 
-all: create-project create-bucket create-ar dbt-deploy iac-clean iac-deploy ## Initializes the application (project creation, bucket creation, docker upload and iac deployment)
+all: gcloud-init configure-docker dbt-deploy iac-clean iac-deploy ## Initializes the application (project creation, bucket creation, docker upload and iac deployment)
+
+docker:
+	@docker build -t open-data-stack .
+	@docker run -it --rm --privileged \
+		--name open-data-stack_tmp \
+		-v /var/run/docker.sock:/var/run/docker.sock \
+		--mount type=bind,source="$(ROOT_DIR)"/,target=/opt/app \
+		-p 8004:8002 \
+		-p 8005:8003 \
+		open-data-stack

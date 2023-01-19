@@ -10,6 +10,7 @@ docker compose version
 
 mkdir airbyte && cd airbyte
 wget https://raw.githubusercontent.com/airbytehq/airbyte/master/{.env,docker-compose.yaml}
+
 docker compose up -d
 
 EOF
